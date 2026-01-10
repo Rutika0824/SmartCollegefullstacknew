@@ -73,8 +73,6 @@ exports.createCourse = async (req, res) => {
       return res.status(400).json({ message: "Missing required fields" });
     }
 
-    const code = generateCourseCode(name);
-
     const course = await Course.create({
       name,
       code,
