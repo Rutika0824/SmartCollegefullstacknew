@@ -139,9 +139,72 @@
 
 
 // src/controllers/course.controller.js
-const Course = require("../models/course.model")
+// const Course = require("../models/course.model")
 
-// ✅ Admin: Create course with teacher assignment
+// // ✅ Admin: Create course with teacher assignment
+// exports.createCourse = async (req, res) => {
+//   try {
+//     const { name, departmentId, teacherId, duration, status } = req.body;
+
+//     if (!teacherId) {
+//       return res.status(400).json({ message: "Teacher is required" });
+//     }
+
+//     const course = await Course.create({
+//       name,
+//       departmentId,
+//       teacherId,
+//       duration,
+//       status,
+//     });
+
+//     res.status(201).json(course);
+//   } catch (error) {
+//     res.status(500).json({ message: error.message });
+//   }
+// };
+
+// // ✅ Admin: Get all courses
+// exports.getCourses = async (req, res) => {
+//   try {
+//     const courses = await Course.find()
+//       .populate("departmentId", "name")
+//       .populate("teacherId", "name email role");
+
+//     res.json(courses);
+//   } catch (error) {
+//     res.status(500).json({ message: error.message });
+//   }
+// };
+
+// // ✅ Teacher: Get only assigned courses
+// exports.getMyCourses = async (req, res) => {
+//   try {
+//     const courses = await Course.find({ teacherId: req.user.id })
+//       .populate("departmentId", "name");
+
+//     res.json(courses);
+//   } catch (error) {
+//     res.status(500).json({ message: error.message });
+//   }
+// };
+
+
+
+// src/controllers/course.controller.js
+const Course = require("../models/course.model");
+
+// Utility: Generate course code
+const generateCourseCode = (name) => {
+  return name
+    .replace(/[^a-zA-Z ]/g, "")
+    .split(" ")
+    .map(w => w.substring(0, 2))
+    .join("")
+    .toUpperCase();
+};
+
+// Admin: Create course
 exports.createCourse = async (req, res) => {
   try {
     const { name, departmentId, teacherId, duration, status } = req.body;
@@ -150,8 +213,11 @@ exports.createCourse = async (req, res) => {
       return res.status(400).json({ message: "Teacher is required" });
     }
 
+    const code = generateCourseCode(name);
+
     const course = await Course.create({
       name,
+      code,
       departmentId,
       teacherId,
       duration,
@@ -164,12 +230,12 @@ exports.createCourse = async (req, res) => {
   }
 };
 
-// ✅ Admin: Get all courses
+// Admin: Get all courses
 exports.getCourses = async (req, res) => {
   try {
     const courses = await Course.find()
       .populate("departmentId", "name")
-      .populate("teacherId", "name email role");
+      .populate("teacherId", "name email");
 
     res.json(courses);
   } catch (error) {
@@ -177,7 +243,7 @@ exports.getCourses = async (req, res) => {
   }
 };
 
-// ✅ Teacher: Get only assigned courses
+// Teacher: Get assigned courses
 exports.getMyCourses = async (req, res) => {
   try {
     const courses = await Course.find({ teacherId: req.user.id })
