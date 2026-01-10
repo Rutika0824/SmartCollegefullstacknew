@@ -1,68 +1,30 @@
-// // const router = require("express").Router();
-// // const auth = require("../middleware/auth.middleware");
-// // const role = require("../middleware/role.middleware");
-// // const ctrl = require("../controllers/attendance.controller");
-
-// // router.post("/", auth, role("teacher"), ctrl.mark);
-// // router.get("/", auth, ctrl.list);
-
-// // module.exports = router;
-
-
-
-
-// const express = require("express");
-// const router = express.Router();
-
-// const {
-//   markAttendance,
-//   getAttendance,
-// } = require("../controllers/attendance.controller");
-
-// const authMiddleware = require("../middleware/auth.middleware");
-// const roleMiddleware = require("../middleware/role.middleware");
-
-// router.post(
-//   "/",
-//   authMiddleware,
-//   roleMiddleware("teacher"),
-//   markAttendance
-// );
-
-// router.get(
-//   "/",
-//   authMiddleware,
-//   getAttendance
-// );
-
-// module.exports = router;
-
-
 const express = require("express");
 const router = express.Router();
 
 const {
   markAttendance,
   getAttendance,
+  getMyAttendance,
 } = require("../controllers/attendance.controller");
 
-const authMiddleware = require("../middleware/auth.middleware");
+const auth = require("../middleware/auth.middleware");
+const role = require("../middleware/role.middleware");
 const roleMiddleware = require("../middleware/role.middleware");
+const authMiddleware = require("../middleware/auth.middleware");
 
-// TEACHER → Mark attendance
-router.post(
-  "/",
-  authMiddleware,
-  roleMiddleware("teacher"),
-  markAttendance
-);
+// Teacher → Mark attendance
+router.post("/", auth, role("teacher"), markAttendance);
+
+// Admin / Teacher / Student → View attendance
+router.get("/", auth, getAttendance);
 
 // ADMIN / TEACHER / STUDENT → View attendance
 router.get(
-  "/",
+  "/my",
   authMiddleware,
-  roleMiddleware("admin", "teacher", "student"),
-  getAttendance
+  roleMiddleware("student"),
+  getMyAttendance
 );
+
 
 module.exports = router;

@@ -1,0 +1,15 @@
+:root {
+  --sc-primary: #4361ee;
+  --sc-bg-dark: #2b2d42;
+  --sc-text-light: #f8f9fa;
+  --sc-gray-600: #495057;
+}
+
+.bg-gray-600 {
+  background-color: var(--sc-gray-600) !important;
+}
+
+.link-hover:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+  color: #ffffff !important;
+}

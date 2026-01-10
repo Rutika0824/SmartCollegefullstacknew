@@ -11,7 +11,7 @@ export default function Navbar() {
       <span className="navbar-text">
         Logged in as <strong>{user.role.toUpperCase()}</strong>
       </span>
-      <button className="btn btn-outline-danger btn-sm" onClick={logout}>
+      <button className="btn btn-outline-danger btn-sm " style={{borderRadius:"10px"}} onClick={logout}>
         Logout
       </button>
     </nav>
