@@ -26,17 +26,42 @@
 
 
 
-const router = require("express").Router();
+// const router = require("express").Router();
+// const auth = require("../middleware/auth.middleware");
+// const role = require("../middleware/role.middleware");
+// const ctrl = require("../controllers/course.controller");
+
+// // Admin only
+// router.post("/", auth, role("admin"), ctrl.createCourse);
+
+// // Any authenticated user
+// router.get("/", auth, ctrl.getCourses);
+// router.get("/:id", auth, ctrl.getCourseById);
+
+// module.exports = router;
+
+
+
+// src/routes/course.routes.js
+const express = require("express");
+const router = express.Router();
+
+const {
+  createCourse,
+  getCourses,
+  getMyCourses,
+} = require("../controllers/course.controller");
+
 const auth = require("../middleware/auth.middleware");
-const role = require("../middleware/role.middleware");
-const ctrl = require("../controllers/course.controller");
+const authorize = require("../middleware/role.middleware");
 
 // Admin only
-router.post("/", auth, role("admin"), ctrl.createCourse);
+router.post("/", auth, authorize("admin"), createCourse);
+router.get("/", auth, authorize("admin"), getCourses);
 
-// Any authenticated user
-router.get("/", auth, ctrl.getCourses);
-router.get("/:id", auth, ctrl.getCourseById);
+// Teacher only
+router.get("/my", auth, authorize("teacher"), getMyCourses);
 
 module.exports = router;
+
 
