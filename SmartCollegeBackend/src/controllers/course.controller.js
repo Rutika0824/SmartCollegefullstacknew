@@ -1,7 +1,6 @@
-// src/controllers/course.controller.js
 const Course = require("../models/course.model");
 
-// ✅ Admin: Create course with teacher assignment
+// Admin: Create course
 exports.createCourse = async (req, res) => {
   try {
     const { name, code, departmentId, teacherId, duration } = req.body;
@@ -19,7 +18,7 @@ exports.createCourse = async (req, res) => {
     });
 
     res.status(201).json({
-      message: "Course created successfully",
+      success: true,
       data: course,
     });
   } catch (err) {
@@ -27,56 +26,57 @@ exports.createCourse = async (req, res) => {
   }
 };
 
-// ✅ Admin: Get all courses
+// Admin: Get all courses
 exports.getCourses = async (req, res) => {
   try {
     const courses = await Course.find()
-      .populate("departmentId", "name")
-      .populate("teacherId", "name email role");
+      .populate("departmentId", "name code")
+      .populate("teacherId", "name email");
 
-    res.json(courses);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.json({
+      success: true,
+      data: courses,
+    });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
   }
 };
 
-// ✅ Teacher: Get only assigned courses
+// Teacher: Get my courses
 exports.getMyCourses = async (req, res) => {
   try {
-    const courses = await Course.find({ teacherId: req.user.id }).populate(
-      "departmentId",
-      "name"
-    );
+    const courses = await Course.find({
+      teacherId: req.user.id,
+      status: "Active",
+    })
+      .populate("departmentId", "name code")
+      .populate("teacherId", "name email");
 
-    res.json(courses);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.json({
+      success: true,
+      data: courses,
+    });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
   }
 };
 
+// Admin: Assign teacher
 exports.assignTeacher = async (req, res) => {
-  const { teacherId } = req.body;
+  try {
+    const { teacherId } = req.body;
 
-  const course = await Course.findByIdAndUpdate(
-    req.params.id,
-    { teacherId },
-    { new: true }
-  );
+    const course = await Course.findByIdAndUpdate(
+      req.params.id,
+      { teacherId },
+      { new: true }
+    );
 
-  res.json({
-    success: true,
-    data: course,
-  });
-};
-
-exports.getMyCourses = async (req, res) => {
-  const courses = await Course.find({
-    teacherId: req.user.id,
-    status: "Active",
-  });
-
-  res.json({
-    success: true,
-    data: courses,
-  });
+    res.json({
+      success: true,
+      data: course,
+    });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
 };
