@@ -1,42 +1,14 @@
 // const Attendance = require("../models/attendance.model");
-
-// exports.mark = async (req, res, next) => {
-//   try {
-//     const attendance = await Attendance.create({
-//       ...req.body,
-//       markedBy: req.user.id
-//     });
-
-//     res.status(201).json(attendance);
-//   } catch (err) {
-//     next(err);
-//   }
-// };
-
-// exports.list = async (req, res, next) => {
-//   try {
-//     const records = await Attendance.find(req.query)
-//       .populate("studentId", "name email")
-//       .populate("markedBy", "name role");
-
-//     res.json(records);
-//   } catch (err) {
-//     next(err);
-//   }
-// };
-
-
-
-// // src/controllers/attendance.controller.js
-// const Attendance = require("../models/attendance.model");
 // const Course = require("../models/course.model");
 
-// // ✅ Teacher marks attendance
+// /**
+//  * Teacher → Mark attendance
+//  */
 // exports.markAttendance = async (req, res) => {
 //   try {
 //     const { courseId, date, records } = req.body;
 
-//     // Verify teacher owns this course
+//     // Validate course ownership
 //     const course = await Course.findOne({
 //       _id: courseId,
 //       teacherId: req.user.id,
@@ -46,23 +18,33 @@
 //       return res.status(403).json({ message: "Not allowed" });
 //     }
 
-//     const attendanceData = records.map((r) => ({
+//     const docs = records.map((r) => ({
 //       studentId: r.studentId,
 //       courseId,
-//       teacherId: req.user.id,
+//       markedBy: req.user.id,
 //       date,
 //       status: r.status,
 //     }));
 
-//     await Attendance.insertMany(attendanceData);
+//     await Attendance.insertMany(docs, { ordered: false });
 
-//     res.status(201).json({ message: "Attendance marked successfully" });
-//   } catch (error) {
-//     res.status(500).json({ message: error.message });
+//     res.status(201).json({
+//       success: true,
+//       message: "Attendance marked successfully",
+//     });
+//   } catch (err) {
+//     if (err.code === 11000) {
+//       return res.status(409).json({
+//         message: "Attendance already marked for this date",
+//       });
+//     }
+//     res.status(500).json({ message: err.message });
 //   }
 // };
 
-// // controllers/attendance.controller.js
+// /**
+//  * View attendance (Admin / Teacher / Student)
+//  */
 // exports.getAttendance = async (req, res) => {
 //   try {
 //     const { date, courseId } = req.query;
@@ -77,7 +59,10 @@
 //       .populate("markedBy", "name role")
 //       .sort({ date: -1 });
 
-//     res.json(records);
+//     res.json({
+//       success: true,
+//       data: records,
+//     });
 //   } catch (err) {
 //     res.status(500).json({ message: err.message });
 //   }
@@ -85,20 +70,23 @@
 
 
 
-
-
-
 const Attendance = require("../models/attendance.model");
 const Course = require("../models/course.model");
 
 /**
- * Teacher → Mark attendance
+ * ==========================
+ * TEACHER → MARK ATTENDANCE
+ * ==========================
  */
 exports.markAttendance = async (req, res) => {
   try {
     const { courseId, date, records } = req.body;
 
-    // Validate course ownership
+    if (!courseId || !date || !records?.length) {
+      return res.status(400).json({ message: "Invalid data" });
+    }
+
+    // ✅ Ensure teacher owns the course
     const course = await Course.findOne({
       _id: courseId,
       teacherId: req.user.id,
@@ -133,15 +121,27 @@ exports.markAttendance = async (req, res) => {
 };
 
 /**
- * View attendance (Admin / Teacher / Student)
+ * ==================================
+ * VIEW ATTENDANCE (ROLE BASED)
+ * ==================================
  */
 exports.getAttendance = async (req, res) => {
   try {
     const { date, courseId } = req.query;
 
     const filter = {};
+
     if (date) filter.date = date;
     if (courseId) filter.courseId = courseId;
+
+    // 🔒 ROLE-BASED FILTERING (CRITICAL FIX)
+    if (req.user.role === "teacher") {
+      filter.markedBy = req.user.id;
+    }
+
+    if (req.user.role === "student") {
+      filter.studentId = req.user.id;
+    }
 
     const records = await Attendance.find(filter)
       .populate("studentId", "name rollNo")
