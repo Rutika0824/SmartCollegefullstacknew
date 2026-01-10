@@ -278,98 +278,170 @@
 
 
 
-
-
-
-
-
-import { NavLink } from "react-router-dom";
+// src/components/Sidebar.jsx
+import { NavLink, useLocation } from "react-router-dom";
 import { useContext } from "react";
 import { AuthContext } from "../auth/AuthContext";
 
 export default function Sidebar() {
   const { user } = useContext(AuthContext);
+  const location = useLocation();
 
   if (!user) return null;
 
-  const linkClass = ({ isActive }) =>
-    `nav-link text-white ${isActive ? "fw-bold bg-secondary rounded" : ""}`;
+  // Helper to generate active class
+  const isActive = (path) => location.pathname === path;
 
   return (
-    <div className="col-md-3 col-lg-2 bg-dark min-vh-100 p-3">
-      <h5 className="text-center text-white mb-4">Smart College</h5>
+    <div
+      className="text-white d-flex flex-column vh-100"
+      style={{
+        width: "250px", // Fixed width like screenshot
+        minWidth: "250px",
+        maxWidth: "250px",
+        overflowY: "auto",
+        borderRight: "1px solid #333",
+        backgroundColor:"#0c3346"
+      }}
+    >
+      {/* Header */}
+      <div
+        className="d-flex flex-column gap-3 justify-content-between align-items-center px-3 py-3 border-bottom border-secondary"
+        style={{ minHeight: "60px" }}
+      >
+        <h5 className="mb-0 fw-bold">Smart College</h5>
+        {/* <span className="small">
+          Logged in as <strong>{user.role.toUpperCase()}</strong>
+        </span> */}
+      </div>
 
-      {/* Common */}
-      <NavLink to="/dashboard" className={linkClass}>
-        Dashboard
-      </NavLink>
+      {/* Navigation */}
+      <nav className="flex-grow-1 px-3 py-3">
+        {/* Dashboard */}
+        <NavLink
+          to="/dashboard"
+          className={`d-block py-2 px-3 rounded mb-1 ${
+            isActive("/dashboard") ? "bg-gray-600" : ""
+          }`}
+          style={{
+            textDecoration: "none",
+            color: "white",
+            fontSize: "0.9rem",
+             textAlign:"center"
+          }}
+        >
+          Dashboard
+        </NavLink>
 
-      {/* ================= ADMIN ================= */}
-      {user.role === "admin" && (
-        <>
-          <hr className="text-secondary" />
+        {/* Admin Section Header */}
+        <div className="mt-3 mb-2 small fw-bold fs-3 text-center" style={{color:"#dde2e4"}}>ADMIN</div>
 
-          <small className="text-secondary">ADMIN</small>
+        {/* Departments */}
+        <NavLink
+          to="/departments"
+          className={`d-block py-2 px-3 rounded mb-1 ${
+            isActive("/departments") ? "bg-gray-600" : ""
+          }`}
+          style={{
+            textDecoration: "none",
+            color: "white",
+            fontSize: "0.9rem",
+             textAlign:"center"
+          }}
+        >
+          Departments
+        </NavLink>
+        <NavLink
+          to="/departments/add"
+          className={`d-block py-2 px-3 rounded mb-1 ${
+            isActive("/departments/add") ? "bg-gray-600" : ""
+          }`}
+          style={{
+            textDecoration: "none",
+            color: "white",
+            fontSize: "0.9rem",
+            textAlign:"center"
+          }}
+        >
+          Add Department
+        </NavLink>
 
-          {/* Departments */}
-          <NavLink to="/departments" className={linkClass}>
-            Departments
-          </NavLink>
-          <NavLink to="/departments/add" className={linkClass}>
-            Add Department
-          </NavLink>
+        {/* Courses */}
+        <NavLink
+          to="/courses"
+          className={`d-block py-2 px-3 rounded mb-1 ${
+            isActive("/courses") ? "bg-gray-600" : ""
+          }`}
+          style={{
+            textDecoration: "none",
+            color: "white",
+            fontSize: "0.9rem",
+             textAlign:"center"
+          }}
+        >
+          Courses
+        </NavLink>
+        <NavLink
+          to="/courses/add"
+          className={`d-block py-2 px-3 rounded mb-1 ${
+            isActive("/courses/add") ? "bg-gray-600" : ""
+          }`}
+          style={{
+            textDecoration: "none",
+            color: "white",
+            fontSize: "0.9rem",
+             textAlign:"center"
+          }}
+        >
+          Add Course
+        </NavLink>
 
-          {/* Courses */}
-          <NavLink to="/courses" className={linkClass}>
-            Courses
-          </NavLink>
-          <NavLink to="/courses/add" className={linkClass}>
-            Add Course
-          </NavLink>
+        {/* Students */}
+        <NavLink
+          to="/students"
+          className={`d-block py-2 px-3 rounded mb-1 ${
+            isActive("/students") ? "bg-gray-600" : ""
+          }`}
+          style={{
+            textDecoration: "none",
+            color: "white",
+            fontSize: "0.9rem",
+             textAlign:"center"
+          }}
+        >
+          Students
+        </NavLink>
+        <NavLink
+          to="/students/add"
+          className={`d-block py-2 px-3 rounded mb-1 ${
+            isActive("/students/add") ? "bg-gray-600" : ""
+          }`}
+          style={{
+            textDecoration: "none",
+            color: "white",
+            fontSize: "0.9rem",
+             textAlign:"center"
+          }}
+        >
+          Add Student
+        </NavLink>
 
-          {/* Students */}
-          <NavLink to="/students" className={linkClass}>
-            Students
-          </NavLink>
-          <NavLink to="/students/add" className={linkClass}>
-            Add Student
-          </NavLink>
-
-          {/* Attendance */}
-          <NavLink to="/attendance/list" className={linkClass}>
-            Attendance Records
-          </NavLink>
-        </>
-      )}
-
-      {/* ================= TEACHER ================= */}
-      {user.role === "teacher" && (
-        <>
-          <hr className="text-secondary" />
-
-          <small className="text-secondary">TEACHER</small>
-
-          <NavLink to="/attendance" className={linkClass}>
-            Mark Attendance
-          </NavLink>
-          <NavLink to="/attendance/list" className={linkClass}>
-            Attendance Records
-          </NavLink>
-        </>
-      )}
-
-      {/* ================= STUDENT ================= */}
-      {user.role === "student" && (
-        <>
-          <hr className="text-secondary" />
-
-          <small className="text-secondary">STUDENT</small>
-
-          <NavLink to="/my-attendance" className={linkClass}>
-            My Attendance
-          </NavLink>
-        </>
-      )}
+        {/* Attendance Records */}
+        <NavLink
+          to="/attendance/list"
+          className={`d-block py-2 px-3 rounded mb-1 ${
+            isActive("/attendance/list") ? "bg-gray-600" : ""
+          }`}
+          style={{
+            textDecoration: "none",
+            color: "white",
+            fontSize: "0.9rem",
+             textAlign:"center"
+          }}
+        >
+          Attendance Records
+        </NavLink>
+      </nav>
     </div>
   );
 }

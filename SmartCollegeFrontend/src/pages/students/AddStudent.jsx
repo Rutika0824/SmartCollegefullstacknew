@@ -229,7 +229,7 @@ export default function AddStudent() {
   };
 
   return (
-    <div className="card shadow-sm">
+    <div className="card shadow-lg">
       <div className="card-body">
         <h5>Add Student</h5>
 
@@ -281,7 +281,7 @@ export default function AddStudent() {
             <input className="form-control" value={rollNo} disabled />
           </div>
 
-          <button className="btn btn-primary">Create</button>
+          <button className="btn btn-dark text-center" style={{borderRadius:"10px"}}>Create</button>
         </form>
       </div>
     </div>
