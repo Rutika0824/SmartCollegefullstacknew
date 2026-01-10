@@ -258,562 +258,81 @@
 
 // export default StudentList;
 
-// src/pages/students/StudentList.jsx
-// import React, { useState, useEffect } from 'react';
-// import {
-//   Alert,
-//   Button,
-//   Card,
-//   Col,
-//   Container,
-//   Form,
-//   Modal,
-//   Row,
-//   Table,
-// } from 'react-bootstrap';
-// import axiosInstance from '../../api/axios';
-
-// const StudentList = () => {
-//   const [students, setStudents] = useState([]);
-//   const [courses, setCourses] = useState([]);
-//   const [loading, setLoading] = useState(true);
-//   const [error, setError] = useState('');
-//   const [showModal, setShowModal] = useState(false);
-//   const [formData, setFormData] = useState({
-//     name: '',
-//     email: '',
-//     rollNo: '', // 👈 Changed from enrollmentNumber
-//     courseId: '',
-//     departmentId: '', // 👈 Added for consistency
-//   });
-//   const [submitting, setSubmitting] = useState(false);
-//   const [filterCourse, setFilterCourse] = useState('');
-
-//   // Fetch students (optionally filtered)
-//   const fetchStudents = async (courseId = '') => {
-//     try {
-//       const res = await axiosInstance.get(`/students${courseId ? `?courseId=${courseId}` : ''}`);
-//       setStudents(res.data);
-//     } catch (err) {
-//       console.error(err);
-//       setError('Failed to load students');
-//     } finally {
-//       setLoading(false);
-//     }
-//   };
-
-//   // Fetch courses for dropdown & filtering
-//   const fetchCourses = async () => {
-//     try {
-//       const res = await axiosInstance.get('/courses');
-//       setCourses(res.data);
-//       if (res.data.length > 0 && !formData.courseId) {
-//         setFormData((prev) => ({ ...prev, courseId: res.data[0]._id }));
-//       }
-//     } catch (err) {
-//       console.error(err);
-//       // Non-fatal
-//     }
-//   };
-
-//   useEffect(() => {
-//     fetchCourses();
-//     fetchStudents(filterCourse);
-//   }, [filterCourse]);
-
-//   const handleInputChange = (e) => {
-//     const { name, value } = e.target;
-//     setFormData((prev) => ({ ...prev, [name]: value }));
-//   };
-
-//   const handleCreate = async (e) => {
-//     e.preventDefault();
-//     if (!formData.name.trim() || !formData.email.trim() || !formData.rollNo.trim() || !formData.courseId || !formData.departmentId) {
-//       setError('All fields are required');
-//       return;
-//     }
-
-//     setSubmitting(true);
-//     setError('');
-//     try {
-//       await axiosInstance.post('/students', formData);
-//       setFormData({
-//         name: '',
-//         email: '',
-//         rollNo: '',
-//         courseId: courses.length ? courses[0]._id : '',
-//         departmentId: courses.length ? courses[0].departmentId : '',
-//       });
-//       setShowModal(false);
-//       fetchStudents(filterCourse);
-//     } catch (err) {
-//       console.error(err);
-//       setError(err.response?.data?.message || 'Failed to create student');
-//     } finally {
-//       setSubmitting(false);
-//     }
-//   };
-
-//   // ✅ FIX: Get course name directly from populated courseId object
-//   const getCourseName = (courseObj) => {
-//     if (!courseObj) return '—';
-//     return courseObj.name || '—';
-//   };
-
-//   return (
-//     <Container fluid>
-//       <Row className="mb-4">
-//         <Col md={6}>
-//           <h2>Students</h2>
-//         </Col>
-//         <Col md={6} className="d-flex justify-content-md-end">
-//           <Button variant="primary" onClick={() => setShowModal(true)}>
-//             Add Student
-//           </Button>
-//         </Col>
-//       </Row>
-
-//       {/* Course Filter */}
-//       <Row className="mb-4">
-//         <Col md={4}>
-//           <Form.Group>
-//             <Form.Label>Filter by Course</Form.Label>
-//             <Form.Select value={filterCourse} onChange={(e) => setFilterCourse(e.target.value)}>
-//               <option value="">All Courses</option>
-//               {courses.map((course) => (
-//                 <option key={course._id} value={course._id}>
-//                   {course.name}
-//                 </option>
-//               ))}
-//             </Form.Select>
-//           </Form.Group>
-//         </Col>
-//       </Row>
-
-//       {error && <Alert variant="danger">{error}</Alert>}
-
-//       {loading && students.length === 0 ? (
-//         <div className="text-center">Loading...</div>
-//       ) : (
-//         <Card>
-//           <Card.Body>
-//             <Table striped bordered hover responsive>
-//               <thead>
-//                 <tr>
-//                   <th>Name</th>
-//                   {/* <th>Email</th> */}
-//                   <th>Roll No</th> {/* 👈 Updated header */}
-//                   <th>Course</th>
-//                   <th>Created At</th>
-//                 </tr>
-//               </thead>
-//               <tbody>
-//                 {students.length === 0 ? (
-//                   <tr>
-//                     <td colSpan="5" className="text-center">
-//                       No students found
-//                     </td>
-//                   </tr>
-//                 ) : (
-//                   students.map((student) => (
-//                     <tr key={student._id}>
-//                       <td>{student.name}</td>
-//                       {/* <td>{student.email || '—'}</td> ❗️ This will show — if email not in API */}
-//                       <td>{student.rollNo || '—'}</td>
-//                       <td>{getCourseName(student.courseId)}</td> {/* ✅ Now uses populated object */}
-//                       <td>{new Date(student.createdAt).toLocaleDateString()}</td>
-//                     </tr>
-//                   ))
-//                 )}
-//               </tbody>
-//             </Table>
-//           </Card.Body>
-//         </Card>
-//       )}
-
-//       {/* Add Student Modal */}
-//       <Modal show={showModal} onHide={() => setShowModal(false)}>
-//         <Modal.Header closeButton>
-//           <Modal.Title>Add Student</Modal.Title>
-//         </Modal.Header>
-//         <Modal.Body>
-//           <Form onSubmit={handleCreate}>
-//             <Form.Group className="mb-3">
-//               <Form.Label>Full Name *</Form.Label>
-//               <Form.Control
-//                 type="text"
-//                 name="name"
-//                 value={formData.name}
-//                 onChange={handleInputChange}
-//                 placeholder="e.g., Sandesh Patil"
-//                 required
-//               />
-//             </Form.Group>
-
-//             <Form.Group className="mb-3">
-//               <Form.Label>Email *</Form.Label>
-//               <Form.Control
-//                 type="email"
-//                 name="email"
-//                 value={formData.email}
-//                 onChange={handleInputChange}
-//                 placeholder="student@example.com"
-//                 required
-//               />
-//             </Form.Group>
-
-//             <Form.Group className="mb-3">
-//               <Form.Label>Roll Number *</Form.Label>
-//               <Form.Control
-//                 type="text"
-//                 name="rollNo"
-//                 value={formData.rollNo}
-//                 onChange={handleInputChange}
-//                 placeholder="e.g., EN2026001"
-//                 required
-//               />
-//             </Form.Group>
-
-//             <Form.Group className="mb-3">
-//               <Form.Label>Course *</Form.Label>
-//               <Form.Select
-//                 name="courseId"
-//                 value={formData.courseId}
-//                 onChange={handleInputChange}
-//                 required
-//               >
-//                 {courses.map((course) => (
-//                   <option key={course._id} value={course._id}>
-//                     {course.name}
-//                   </option>
-//                 ))}
-//               </Form.Select>
-//             </Form.Group>
-
-//             <Form.Group className="mb-3">
-//               <Form.Label>Department *</Form.Label>
-//               <Form.Select
-//                 name="departmentId"
-//                 value={formData.departmentId}
-//                 onChange={handleInputChange}
-//                 required
-//               >
-//                 {courses.map((course) => (
-//                   <option key={course._id} value={course.departmentId}>
-//                     {course.departmentName || course.departmentId}
-//                   </option>
-//                 ))}
-//               </Form.Select>
-//             </Form.Group>
-
-//             <Button variant="primary" type="submit" disabled={submitting}>
-//               {submitting ? 'Creating...' : 'Add Student'}
-//             </Button>
-//           </Form>
-//         </Modal.Body>
-//       </Modal>
-//     </Container>
-//   );
-// };
-
-// export default StudentList;
 
 
-// src/pages/students/StudentList.jsx
-import React, { useState, useEffect } from 'react';
-import {
-  Alert,
-  Button,
-  Card,
-  Col,
-  Container,
-  Form,
-  Modal,
-  Row,
-  Table,
-} from 'react-bootstrap';
-import axiosInstance from '../../api/axios';
 
-const StudentList = () => {
+
+
+
+
+
+import { useEffect, useState } from "react";
+import api from "../../api/axios";
+
+export default function StudentList() {
   const [students, setStudents] = useState([]);
-  const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-  const [showModal, setShowModal] = useState(false);
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    rollNo: '', // Will be auto-generated
-    courseId: '',
-    departmentId: '',
-  });
-  const [submitting, setSubmitting] = useState(false);
-  const [filterCourse, setFilterCourse] = useState('');
-
-  // Fetch students (optionally filtered)
-  const fetchStudents = async (courseId = '') => {
-    try {
-      const res = await axiosInstance.get(`/students${courseId ? `?courseId=${courseId}` : ''}`);
-      setStudents(res.data);
-    } catch (err) {
-      console.error(err);
-      setError('Failed to load students');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Fetch courses for dropdown & filtering
-  const fetchCourses = async () => {
-    try {
-      const res = await axiosInstance.get('/courses');
-      setCourses(res.data);
-      if (res.data.length > 0 && !formData.courseId) {
-        setFormData((prev) => ({ ...prev, courseId: res.data[0]._id }));
-      }
-    } catch (err) {
-      console.error(err);
-      // Non-fatal
-    }
-  };
+  const [error, setError] = useState("");
 
   useEffect(() => {
-    fetchCourses();
-    fetchStudents(filterCourse);
-  }, [filterCourse]);
+    api
+      .get("/students")
+      .then((res) => setStudents(res.data))
+      .catch(() => setError("Failed to load students"))
+      .finally(() => setLoading(false));
+  }, []);
 
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-  };
-
-  // ✅ Auto-generate Roll No based on selected course
-  const generateRollNo = () => {
-    if (!formData.courseId) return '';
-    const selectedCourse = courses.find(c => c._id === formData.courseId);
-    if (!selectedCourse) return '';
-
-    const courseCode = selectedCourse.code || 'UNK';
-    const existingStudentsInCourse = students.filter(s => s.courseId?._id === formData.courseId);
-    const nextNumber = existingStudentsInCourse.length + 1;
-
-    return `${courseCode}${nextNumber}`;
-  };
-
-  const handleCreate = async (e) => {
-    e.preventDefault();
-    if (!formData.name.trim() || !formData.email.trim() || !formData.courseId || !formData.departmentId) {
-      setError('Name, Email, Course, and Department are required');
-      return;
-    }
-
-    // ✅ Auto-generate rollNo
-    const generatedRollNo = generateRollNo();
-    if (!generatedRollNo) {
-      setError('Could not generate Roll Number. Please select a course.');
-      return;
-    }
-
-    setSubmitting(true);
-    setError('');
-    try {
-      await axiosInstance.post('/students', {
-        ...formData,
-        rollNo: generatedRollNo, // ✅ Override with auto-generated
-      });
-      setFormData({
-        name: '',
-        email: '',
-        rollNo: '',
-        courseId: courses.length ? courses[0]._id : '',
-        departmentId: courses.length ? courses[0].departmentId : '',
-      });
-      setShowModal(false);
-      fetchStudents(filterCourse);
-    } catch (err) {
-      console.error(err);
-      setError(err.response?.data?.message || 'Failed to create student');
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
-  const getCourseName = (courseObj) => {
-    if (!courseObj) return '—';
-    return courseObj.name || '—';
-  };
+  if (loading) return <p>Loading students...</p>;
+  if (error) return <p className="text-danger">{error}</p>;
 
   return (
-    <Container fluid>
-      <Row className="mb-4">
-        <Col md={6}>
-          <h2>Students</h2>
-        </Col>
-        <Col md={6} className="d-flex justify-content-md-end">
-          <Button variant="primary" onClick={() => setShowModal(true)}>
-            Add Student
-          </Button>
-        </Col>
-      </Row>
+    <div className="card shadow-sm mt-4">
+      <div className="card-body">
+        <h5 className="mb-3">Students</h5>
 
-      {/* Course Filter */}
-      <Row className="mb-4">
-        <Col md={4}>
-          <Form.Group>
-            <Form.Label>Filter by Course</Form.Label>
-            <Form.Select value={filterCourse} onChange={(e) => setFilterCourse(e.target.value)}>
-              <option value="">All Courses</option>
-              {courses.map((course) => (
-                <option key={course._id} value={course._id}>
-                  {course.name}
-                </option>
+        <div className="table-responsive">
+          <table className="table table-bordered align-middle">
+            <thead className="table-light">
+              <tr>
+                <th>Name</th>
+                <th>Roll No</th>
+                <th>Course</th>
+                <th>Department</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {students.length === 0 && (
+                <tr>
+                  <td colSpan="5" className="text-center">
+                    No students found
+                  </td>
+                </tr>
+              )}
+
+              {students.map((s) => (
+                <tr key={s._id}>
+                  <td>{s.name}</td>
+                  <td>{s.rollNo}</td>
+                  <td>{s.courseId?.name || "-"}</td>
+                  <td>{s.departmentId?.name || "-"}</td>
+                  <td>
+                    <span
+                      className={`badge ${
+                        s.status === "Active"
+                          ? "bg-success"
+                          : "bg-secondary"
+                      }`}
+                    >
+                      {s.status}
+                    </span>
+                  </td>
+                </tr>
               ))}
-            </Form.Select>
-          </Form.Group>
-        </Col>
-      </Row>
-
-      {error && <Alert variant="danger">{error}</Alert>}
-
-      {loading && students.length === 0 ? (
-        <div className="text-center">Loading...</div>
-      ) : (
-        <Card>
-          <Card.Body>
-            {/* ✅ Scrollable Table */}
-            <div style={{ maxHeight: '500px', overflowY: 'auto' }}>
-              <Table striped bordered hover responsive>
-                <thead>
-                  <tr>
-                    <th>Name</th>
-                    {/* <th>Email</th> */}
-                    <th>Roll No</th>
-                    <th>Course</th>
-                    <th>Created At</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {students.length === 0 ? (
-                    <tr>
-                      <td colSpan="5" className="text-center">
-                        No students found
-                      </td>
-                    </tr>
-                  ) : (
-                    students.map((student) => (
-                      <tr key={student._id}>
-                        <td>{student.name}</td>
-                        {/* <td>{student.email || '—'}</td> */}
-                        <td>{student.rollNo || '—'}</td>
-                        <td>{getCourseName(student.courseId)}</td>
-                        <td>{new Date(student.createdAt).toLocaleDateString()}</td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </Table>
-            </div>
-          </Card.Body>
-        </Card>
-      )}
-
-      {/* Add Student Modal */}
-      <Modal show={showModal} onHide={() => setShowModal(false)} size="lg">
-        <Modal.Header closeButton>
-          <Modal.Title>Add Student</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <Form onSubmit={handleCreate}>
-            <Form.Group className="mb-3">
-              <Form.Label>Full Name *</Form.Label>
-              <Form.Control
-                type="text"
-                name="name"
-                value={formData.name}
-                onChange={handleInputChange}
-                placeholder="e.g., Sandesh Patil"
-                required
-              />
-            </Form.Group>
-
-            <Form.Group className="mb-3">
-              <Form.Label>Email *</Form.Label>
-              <Form.Control
-                type="email"
-                name="email"
-                value={formData.email}
-                onChange={handleInputChange}
-                placeholder="student@example.com"
-                required
-              />
-            </Form.Group>
-
-            {/* ✅ Roll No - Auto Generated */}
-            <Form.Group className="mb-3">
-              <Form.Label>Roll Number (Auto Generated)</Form.Label>
-              <Form.Control
-                type="text"
-                value={generateRollNo()} // ✅ Display generated value
-                readOnly
-                className="bg-light"
-              />
-              <Form.Text className="text-muted">
-                Will be auto-generated based on selected course.
-              </Form.Text>
-            </Form.Group>
-
-            <Form.Group className="mb-3">
-              <Form.Label>Course *</Form.Label>
-              <Form.Select
-                name="courseId"
-                value={formData.courseId}
-                onChange={handleInputChange}
-                required
-              >
-                {courses.map((course) => (
-                  <option key={course._id} value={course._id}>
-                    {course.name}
-                  </option>
-                ))}
-              </Form.Select>
-            </Form.Group>
-
-            <Form.Group className="mb-3">
-              <Form.Label>Department *</Form.Label>
-              <Form.Select
-                name="departmentId"
-                value={formData.departmentId}
-                onChange={handleInputChange}
-                required
-              >
-                {courses
-                  .filter(course => course.departmentId)
-                  .map((course) => {
-                    const dept = course.departmentId;
-                    return (
-                      <option key={dept._id} value={dept._id}>
-                        {dept.name || dept.code}
-                      </option>
-                    );
-                  })}
-              </Form.Select>
-            </Form.Group>
-
-            <Button variant="primary" type="submit" disabled={submitting}>
-              {submitting ? 'Creating...' : 'Add Student'}
-            </Button>
-            <Button
-              variant="secondary"
-              className="ms-2"
-              onClick={() => setShowModal(false)}
-            >
-              Cancel
-            </Button>
-          </Form>
-        </Modal.Body>
-      </Modal>
-    </Container>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
   );
-};
-
-export default StudentList;
+}
