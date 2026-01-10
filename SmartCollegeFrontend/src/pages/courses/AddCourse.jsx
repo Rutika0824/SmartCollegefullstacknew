@@ -137,55 +137,88 @@
 
 
 
-
 import { useEffect, useState } from "react";
 import api from "../../api/axios";
 
 export default function AddCourse() {
   const [name, setName] = useState("");
   const [code, setCode] = useState("");
+
   const [departments, setDepartments] = useState([]);
   const [teachers, setTeachers] = useState([]);
+
   const [departmentId, setDepartmentId] = useState("");
   const [teacherId, setTeacherId] = useState("");
 
+  /* ---------------- FETCH DATA ---------------- */
   useEffect(() => {
-    api.get("/departments").then((res) => setDepartments(res.data));
-    api.get("/users?role=teacher").then((res) => setTeachers(res.data));
+    const fetchData = async () => {
+      try {
+        const deptRes = await api.get("/departments");
+        setDepartments(deptRes.data.data || deptRes.data);
+
+        const teacherRes = await api.get("/users/teachers");
+        setTeachers(teacherRes.data.data || []);
+      } catch (err) {
+        console.error(err);
+        alert("Failed to load data");
+      }
+    };
+
+    fetchData();
   }, []);
 
-  const generateCode = (value, deptCode) => {
-    const c = value.substring(0, 2).toUpperCase();
-    setCode(`${c}-${deptCode}`);
+  /* ---------------- AUTO COURSE CODE ---------------- */
+  const handleNameChange = (value) => {
     setName(value);
+
+    const dept = departments.find((d) => d._id === departmentId);
+    if (!dept) return;
+
+    const coursePrefix = value.substring(0, 2).toUpperCase();
+    setCode(`${coursePrefix}-${dept.code}`);
   };
 
+  /* ---------------- SUBMIT ---------------- */
   const submitHandler = async (e) => {
     e.preventDefault();
-    await api.post("/courses", {
-      name,
-      code,
-      departmentId,
-      teacherId,
-      duration: "6 Sem",
-    });
-    alert("Course created");
+
+    try {
+      await api.post("/courses", {
+        name,
+        code,
+        departmentId,
+        teacherId,
+        duration: "6 Sem",
+      });
+
+      alert("Course created successfully");
+
+      // reset
+      setName("");
+      setCode("");
+      setDepartmentId("");
+      setTeacherId("");
+    } catch (err) {
+      alert(err.response?.data?.message || "Failed to create course");
+    }
   };
 
-  const selectedDept = departments.find((d) => d._id === departmentId);
-
+  /* ---------------- UI ---------------- */
   return (
     <div className="card shadow-sm">
       <div className="card-body">
-        <h5>Add Course</h5>
+        <h5 className="mb-3">Add Course</h5>
 
         <form onSubmit={submitHandler}>
+          {/* Department */}
           <div className="mb-3">
-            <label>Department</label>
+            <label className="form-label">Department</label>
             <select
               className="form-select"
-              required
+              value={departmentId}
               onChange={(e) => setDepartmentId(e.target.value)}
+              required
             >
               <option value="">Select</option>
               {departments.map((d) => (
@@ -196,39 +229,49 @@ export default function AddCourse() {
             </select>
           </div>
 
+          {/* Course Name */}
           <div className="mb-3">
-            <label>Course Name</label>
+            <label className="form-label">Course Name</label>
             <input
+              type="text"
               className="form-control"
+              value={name}
+              onChange={(e) => handleNameChange(e.target.value)}
               required
-              onChange={(e) =>
-                generateCode(e.target.value, selectedDept?.code || "")
-              }
+              disabled={!departmentId}
             />
           </div>
 
+          {/* Course Code */}
           <div className="mb-3">
-            <label>Course Code</label>
-            <input className="form-control" value={code} disabled />
+            <label className="form-label">Course Code</label>
+            <input
+              type="text"
+              className="form-control"
+              value={code}
+              disabled
+            />
           </div>
 
+          {/* Assign Teacher */}
           <div className="mb-3">
-            <label>Assign Teacher</label>
+            <label className="form-label">Assign Teacher</label>
             <select
               className="form-select"
-              required
+              value={teacherId}
               onChange={(e) => setTeacherId(e.target.value)}
+              required
             >
               <option value="">Select</option>
               {teachers.map((t) => (
                 <option key={t._id} value={t._id}>
-                  {t.name}
+                  {t.name} ({t.email})
                 </option>
               ))}
             </select>
           </div>
 
-          <button className="btn btn-primary">Create</button>
+          <button className="btn btn-primary">Create Course</button>
         </form>
       </div>
     </div>

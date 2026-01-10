@@ -105,35 +105,73 @@
 
 
 
-// src/models/Course.model.js
+// // src/models/Course.model.js
+// const mongoose = require("mongoose");
+
+// const courseSchema = new mongoose.Schema(
+//   {
+//     name: {
+//       type: String,
+//       required: true,
+//       trim: true,
+//     },
+
+//     departmentId: {
+//       type: mongoose.Schema.Types.ObjectId,
+//       ref: "Department",
+//       required: true,
+//     },
+
+//     // ✅ NEW: Course assigned to a teacher
+//     teacherId: {
+//       type: mongoose.Schema.Types.ObjectId,
+//       ref: "User",
+//       required: true,
+//     },
+
+//     duration: {
+//       type: String,
+//       required: true,
+//     },
+
+//     status: {
+//       type: String,
+//       enum: ["Active", "Inactive"],
+//       default: "Active",
+//     },
+//   },
+//   { timestamps: true }
+// );
+
+// module.exports = mongoose.model("Course", courseSchema);
+
+
+
+
+
+
 const mongoose = require("mongoose");
 
-const courseSchema = new mongoose.Schema(
+const CourseSchema = new mongoose.Schema(
   {
     name: {
       type: String,
       required: true,
-      trim: true,
     },
-
+    code: {
+      type: String,
+      required: true,
+      unique: true,
+    },
     departmentId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Department",
       required: true,
     },
-
-    // ✅ NEW: Course assigned to a teacher
     teacherId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
-      required: true,
     },
-
-    duration: {
-      type: String,
-      required: true,
-    },
-
     status: {
       type: String,
       enum: ["Active", "Inactive"],
@@ -143,6 +181,5 @@ const courseSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-module.exports = mongoose.model("Course", courseSchema);
-
+module.exports = mongoose.model("Course", CourseSchema);
 

@@ -11,7 +11,6 @@
 
 
 
-// src/routes/attendance.routes.js
 const express = require("express");
 const router = express.Router();
 
@@ -20,13 +19,20 @@ const {
   getAttendance,
 } = require("../controllers/attendance.controller");
 
-const auth = require("../middleware/auth.middleware");
-const authorize = require("../middleware/role.middleware");
+const authMiddleware = require("../middleware/auth.middleware");
+const roleMiddleware = require("../middleware/role.middleware");
 
-// Teacher only
-router.post("/", auth, authorize("teacher"), markAttendance);
+router.post(
+  "/",
+  authMiddleware,
+  roleMiddleware("teacher"),
+  markAttendance
+);
 
-// Admin / Student
-router.get("/", auth, getAttendance);
+router.get(
+  "/",
+  authMiddleware,
+  getAttendance
+);
 
 module.exports = router;
