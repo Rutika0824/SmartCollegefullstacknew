@@ -9,13 +9,17 @@ export default function MarkAttendance() {
   const [date, setDate] = useState("");
   const [loading, setLoading] = useState(false);
 
+  // Load teacher courses
   useEffect(() => {
     api.get("/courses/my").then((res) => {
       setCourses(res.data?.data || res.data || []);
     });
   }, []);
 
+  // Load students by course
   const loadStudents = async (id) => {
+    if (!id) return;
+
     setCourseId(id);
     setLoading(true);
 
@@ -46,18 +50,28 @@ export default function MarkAttendance() {
   const submitHandler = async (e) => {
     e.preventDefault();
 
-    await api.post("/attendance", {
-      courseId,
-      date,
-      records,
-    });
+    if (!courseId || !date || records.length === 0) {
+      alert("Please select course, date and students");
+      return;
+    }
 
-    alert("Attendance marked successfully");
+    try {
+      await api.post("/attendance", {
+        courseId,
+        date,
+        records,
+      });
 
-    setStudents([]);
-    setRecords([]);
-    setCourseId("");
-    setDate("");
+      alert("Attendance marked successfully");
+
+      // Reset form
+      setStudents([]);
+      setRecords([]);
+      setCourseId("");
+      setDate("");
+    } catch (err) {
+      alert(err.response?.data?.message || "Failed to mark attendance");
+    }
   };
 
   return (
@@ -90,10 +104,10 @@ export default function MarkAttendance() {
 
           {loading && <p>Loading students...</p>}
 
-          {students.length > 0 && (
+          {!loading && students.length > 0 && (
             <>
               <table className="table table-bordered">
-                <thead>
+                <thead className="table-light">
                   <tr>
                     <th>Name</th>
                     <th>Roll No</th>

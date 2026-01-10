@@ -17,6 +17,12 @@ export default function StudentList() {
   if (loading) return <p className="text-center mt-5">Loading students...</p>;
   if (error) return <p className="text-danger text-center mt-4">{error}</p>;
 
+  const getDepartmentName = (id) => {
+    if (!id) return '—';
+    const dept = departments.find((d) => d._id === id);
+    return dept ? dept.name : '—';
+  };
+
   return (
     <div className="card shadow-lg border-0 rounded-3  overflow-hidden">
       <div className="card-header  text-white py-3" style={{backgroundColor:"#1a3f51"}}>

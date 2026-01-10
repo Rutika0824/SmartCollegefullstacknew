@@ -1,4 +1,5 @@
 const Student = require("../models/student.model");
+const Course = require("../models/course.model");
 
 exports.createStudent = async (req, res, next) => {
   try {
@@ -11,11 +12,26 @@ exports.createStudent = async (req, res, next) => {
 
 exports.getStudents = async (req, res, next) => {
   try {
+    const { courseId } = req.query;
     const filter = {};
 
-    // support: /api/students?courseId=
-    if (req.query.courseId) {
-      filter.courseId = req.query.courseId;
+    // If courseId is passed
+    if (courseId) {
+      // 🔒 TEACHER ACCESS CONTROL
+      if (req.user.role === "teacher") {
+        const course = await Course.findOne({
+          _id: courseId,
+          teacherId: req.user.id,
+        });
+
+        if (!course) {
+          return res.status(403).json({
+            message: "You are not allowed to access this course",
+          });
+        }
+      }
+
+      filter.courseId = courseId;
     }
 
     const students = await Student.find(filter)

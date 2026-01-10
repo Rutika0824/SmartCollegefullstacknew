@@ -56,8 +56,18 @@ exports.getAttendance = async (req, res) => {
     const { date, courseId } = req.query;
 
     const filter = {};
+
     if (date) filter.date = date;
     if (courseId) filter.courseId = courseId;
+
+    // 🔒 ROLE-BASED FILTERING (CRITICAL FIX)
+    if (req.user.role === "teacher") {
+      filter.markedBy = req.user.id;
+    }
+
+    if (req.user.role === "student") {
+      filter.studentId = req.user.id;
+    }
 
     const records = await Attendance.find(filter)
       .populate("studentId", "name rollNo")

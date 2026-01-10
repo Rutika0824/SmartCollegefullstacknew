@@ -41,25 +41,25 @@ export default function MyAttendance() {
               </tr>
             </thead>
             <tbody>
-              {attendance.map((a) => (
-                <tr key={a._id}>
-                  <td>{new Date(a.date).toLocaleDateString()}</td>
-                  <td>{a.courseId?.name}</td>
-                  <td>
-                    <span
-                      className={`badge ${
-                        a.status === "Present"
-                          ? "bg-success"
-                          : "bg-danger"
-                      }`}
-                    >
-                      {a.status}
-                    </span>
-                  </td>
-                </tr>
-              ))}
-
-              {attendance.length === 0 && (
+              {attendance.length > 0 ? (
+                attendance.map((a) => (
+                  <tr key={a._id}>
+                    <td>{new Date(a.date).toLocaleDateString()}</td>
+                    <td>{a.courseId?.name || "-"}</td>
+                    <td>
+                      <span
+                        className={`badge ${
+                          a.status === "Present"
+                            ? "bg-success"
+                            : "bg-danger"
+                        }`}
+                      >
+                        {a.status}
+                      </span>
+                    </td>
+                  </tr>
+                ))
+              ) : (
                 <tr>
                   <td colSpan="3" className="text-center text-muted">
                     No attendance records found

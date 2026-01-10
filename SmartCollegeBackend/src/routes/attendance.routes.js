@@ -18,6 +18,7 @@ router.post("/", auth, role("teacher"), markAttendance);
 // Admin / Teacher / Student → View attendance
 router.get("/", auth, getAttendance);
 
+// ADMIN / TEACHER / STUDENT → View attendance
 router.get(
   "/my",
   authMiddleware,

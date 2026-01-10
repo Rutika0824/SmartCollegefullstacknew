@@ -6,11 +6,10 @@ const ctrl = require("../controllers/student.controller");
 // Admin only: create student
 router.post("/", auth, role("admin"), ctrl.createStudent);
 
-// Admin & Teacher: view students
-router.get("/", auth, ctrl.getStudents);
+// Admin & Teacher: view students (secure)
+router.get("/", auth, role("admin", "teacher"), ctrl.getStudents);
 
 // Get student by ID
 router.get("/:id", auth, ctrl.getStudentById);
 
 module.exports = router;
-
