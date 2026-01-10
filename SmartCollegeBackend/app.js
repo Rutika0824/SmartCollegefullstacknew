@@ -23,6 +23,7 @@ app.use("/api/departments", require("./src/routes/department.routes"));
 app.use("/api/courses", require("./src/routes/course.routes"));
 app.use("/api/students", require("./src/routes/student.routes"));
 app.use("/api/attendance", require("./src/routes/attendance.routes"));
+app.use("/api/users", require("./src/routes/user.routes"));
 
 // ❗ Global Error Handler (MUST be last)
 app.use(require("./src/middleware/error.middleware"));

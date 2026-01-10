@@ -302,11 +302,12 @@ export default function StudentList() {
               <tr>
                 <th>Name</th>
                 <th>Roll No</th>
-                <th>Course</th>
                 <th>Department</th>
+                <th>Course</th>
                 <th>Status</th>
               </tr>
             </thead>
+
             <tbody>
               {students.length === 0 && (
                 <tr>
@@ -320,8 +321,8 @@ export default function StudentList() {
                 <tr key={s._id}>
                   <td>{s.name}</td>
                   <td>{s.rollNo}</td>
-                  <td>{s.courseId?.name || "-"}</td>
                   <td>{s.departmentId?.name || "-"}</td>
+                  <td>{s.courseId?.name || "-"}</td>
                   <td>
                     <span
                       className={`badge ${
@@ -336,6 +337,7 @@ export default function StudentList() {
                 </tr>
               ))}
             </tbody>
+
           </table>
         </div>
       </div>

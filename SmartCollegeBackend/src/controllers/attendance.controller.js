@@ -27,16 +27,78 @@
 
 
 
-// src/controllers/attendance.controller.js
+// // src/controllers/attendance.controller.js
+// const Attendance = require("../models/attendance.model");
+// const Course = require("../models/course.model");
+
+// // ✅ Teacher marks attendance
+// exports.markAttendance = async (req, res) => {
+//   try {
+//     const { courseId, date, records } = req.body;
+
+//     // Verify teacher owns this course
+//     const course = await Course.findOne({
+//       _id: courseId,
+//       teacherId: req.user.id,
+//     });
+
+//     if (!course) {
+//       return res.status(403).json({ message: "Not allowed" });
+//     }
+
+//     const attendanceData = records.map((r) => ({
+//       studentId: r.studentId,
+//       courseId,
+//       teacherId: req.user.id,
+//       date,
+//       status: r.status,
+//     }));
+
+//     await Attendance.insertMany(attendanceData);
+
+//     res.status(201).json({ message: "Attendance marked successfully" });
+//   } catch (error) {
+//     res.status(500).json({ message: error.message });
+//   }
+// };
+
+// // controllers/attendance.controller.js
+// exports.getAttendance = async (req, res) => {
+//   try {
+//     const { date, courseId } = req.query;
+
+//     const filter = {};
+//     if (date) filter.date = date;
+//     if (courseId) filter.courseId = courseId;
+
+//     const records = await Attendance.find(filter)
+//       .populate("studentId", "name rollNo")
+//       .populate("courseId", "name")
+//       .populate("markedBy", "name role")
+//       .sort({ date: -1 });
+
+//     res.json(records);
+//   } catch (err) {
+//     res.status(500).json({ message: err.message });
+//   }
+// };
+
+
+
+
+
+
 const Attendance = require("../models/attendance.model");
 const Course = require("../models/course.model");
 
-// ✅ Teacher marks attendance
+/**
+ * Teacher → Mark attendance
+ */
 exports.markAttendance = async (req, res) => {
   try {
     const { courseId, date, records } = req.body;
 
-    // Verify teacher owns this course
+    // Validate course ownership
     const course = await Course.findOne({
       _id: courseId,
       teacherId: req.user.id,
@@ -46,38 +108,52 @@ exports.markAttendance = async (req, res) => {
       return res.status(403).json({ message: "Not allowed" });
     }
 
-    const attendanceData = records.map((r) => ({
+    const docs = records.map((r) => ({
       studentId: r.studentId,
       courseId,
-      teacherId: req.user.id,
+      markedBy: req.user.id,
       date,
       status: r.status,
     }));
 
-    await Attendance.insertMany(attendanceData);
+    await Attendance.insertMany(docs, { ordered: false });
 
-    res.status(201).json({ message: "Attendance marked successfully" });
-  } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(201).json({
+      success: true,
+      message: "Attendance marked successfully",
+    });
+  } catch (err) {
+    if (err.code === 11000) {
+      return res.status(409).json({
+        message: "Attendance already marked for this date",
+      });
+    }
+    res.status(500).json({ message: err.message });
   }
 };
 
-// ✅ View attendance
+/**
+ * View attendance (Admin / Teacher / Student)
+ */
 exports.getAttendance = async (req, res) => {
   try {
-    const { studentId, courseId } = req.query;
+    const { date, courseId } = req.query;
 
     const filter = {};
-    if (studentId) filter.studentId = studentId;
+    if (date) filter.date = date;
     if (courseId) filter.courseId = courseId;
 
-    const attendance = await Attendance.find(filter)
+    const records = await Attendance.find(filter)
       .populate("studentId", "name rollNo")
       .populate("courseId", "name")
-      .populate("teacherId", "name");
+      .populate("markedBy", "name role")
+      .sort({ date: -1 });
 
-    res.json(attendance);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.json({
+      success: true,
+      data: records,
+    });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
   }
 };
