@@ -1,3 +1,266 @@
+// // src/pages/students/StudentList.jsx
+// import React, { useState, useEffect } from 'react';
+// import {
+//   Alert,
+//   Button,
+//   Card,
+//   Col,
+//   Container,
+//   Form,
+//   Modal,
+//   Row,
+//   Table,
+// } from 'react-bootstrap';
+// import axiosInstance from '../../api/axios';
+
+// const StudentList = () => {
+//   const [students, setStudents] = useState([]);
+//   const [courses, setCourses] = useState([]);
+//   const [loading, setLoading] = useState(true);
+//   const [error, setError] = useState('');
+//   const [showModal, setShowModal] = useState(false);
+//   const [formData, setFormData] = useState({
+//     name: '',
+//     email: '',
+//     rollNo: '', // 👈 Changed from enrollmentNumber
+//     courseId: '',
+//     departmentId: '', // 👈 Added for consistency
+//   });
+//   const [submitting, setSubmitting] = useState(false);
+//   const [filterCourse, setFilterCourse] = useState('');
+
+//   // Fetch students (optionally filtered)
+//   const fetchStudents = async (courseId = '') => {
+//     try {
+//       const res = await axiosInstance.get(`/students${courseId ? `?courseId=${courseId}` : ''}`);
+//       setStudents(res.data);
+//     } catch (err) {
+//       console.error(err);
+//       setError('Failed to load students');
+//     } finally {
+//       setLoading(false);
+//     }
+//   };
+
+//   // Fetch courses for dropdown & filtering
+//   const fetchCourses = async () => {
+//     try {
+//       const res = await axiosInstance.get('/courses');
+//       setCourses(res.data);
+//       if (res.data.length > 0 && !formData.courseId) {
+//         setFormData((prev) => ({ ...prev, courseId: res.data[0]._id }));
+//       }
+//     } catch (err) {
+//       console.error(err);
+//       // Non-fatal
+//     }
+//   };
+
+//   useEffect(() => {
+//     fetchCourses();
+//     fetchStudents(filterCourse);
+//   }, [filterCourse]);
+
+//   const handleInputChange = (e) => {
+//     const { name, value } = e.target;
+//     setFormData((prev) => ({ ...prev, [name]: value }));
+//   };
+
+//   const handleCreate = async (e) => {
+//     e.preventDefault();
+//     if (!formData.name.trim() || !formData.email.trim() || !formData.rollNo.trim() || !formData.courseId || !formData.departmentId) {
+//       setError('All fields are required');
+//       return;
+//     }
+
+//     setSubmitting(true);
+//     setError('');
+//     try {
+//       await axiosInstance.post('/students', formData);
+//       setFormData({
+//         name: '',
+//         email: '',
+//         rollNo: '',
+//         courseId: courses.length ? courses[0]._id : '',
+//         departmentId: courses.length ? courses[0].departmentId : '',
+//       });
+//       setShowModal(false);
+//       fetchStudents(filterCourse);
+//     } catch (err) {
+//       console.error(err);
+//       setError(err.response?.data?.message || 'Failed to create student');
+//     } finally {
+//       setSubmitting(false);
+//     }
+//   };
+
+//   const getCourseName = (id) => {
+//     if (!id) return '—';
+//     const course = courses.find((c) => c._id === id);
+//     return course ? course.name : '—';
+//   };
+
+//   return (
+//     <Container fluid>
+//       <Row className="mb-4">
+//         <Col md={6}>
+//           <h2>Students</h2>
+//         </Col>
+//         <Col md={6} className="d-flex justify-content-md-end">
+//           <Button variant="primary" onClick={() => setShowModal(true)}>
+//             Add Student
+//           </Button>
+//         </Col>
+//       </Row>
+
+//       {/* Course Filter */}
+//       <Row className="mb-4">
+//         <Col md={4}>
+//           <Form.Group>
+//             <Form.Label>Filter by Course</Form.Label>
+//             <Form.Select value={filterCourse} onChange={(e) => setFilterCourse(e.target.value)}>
+//               <option value="">All Courses</option>
+//               {courses.map((course) => (
+//                 <option key={course._id} value={course._id}>
+//                   {course.name}
+//                 </option>
+//               ))}
+//             </Form.Select>
+//           </Form.Group>
+//         </Col>
+//       </Row>
+
+//       {error && <Alert variant="danger">{error}</Alert>}
+
+//       {loading && students.length === 0 ? (
+//         <div className="text-center">Loading...</div>
+//       ) : (
+//         <Card>
+//           <Card.Body>
+//             <Table striped bordered hover responsive>
+//               <thead>
+//                 <tr>
+//                   <th>Name</th>
+//                   <th>Email</th>
+//                   <th>Roll No</th> {/* 👈 Updated header */}
+//                   <th>Course</th>
+//                   <th>Created At</th>
+//                 </tr>
+//               </thead>
+//               <tbody>
+//                 {students.length === 0 ? (
+//                   <tr>
+//                     <td colSpan="5" className="text-center">
+//                       No students found
+//                     </td>
+//                   </tr>
+//                 ) : (
+//                   students.map((student) => (
+//                     <tr key={student._id}>
+//                       <td>{student.name}</td>
+//                       <td>{student.email || '—'}</td>
+//                       <td>{student.rollNo || '—'}</td>
+//                       <td>{getCourseName(student.courseId)}</td>
+//                       <td>{new Date(student.createdAt).toLocaleDateString()}</td>
+//                     </tr>
+//                   ))
+//                 )}
+//               </tbody>
+//             </Table>
+//           </Card.Body>
+//         </Card>
+//       )}
+
+//       {/* Add Student Modal */}
+//       <Modal show={showModal} onHide={() => setShowModal(false)}>
+//         <Modal.Header closeButton>
+//           <Modal.Title>Add Student</Modal.Title>
+//         </Modal.Header>
+//         <Modal.Body>
+//           <Form onSubmit={handleCreate}>
+//             <Form.Group className="mb-3">
+//               <Form.Label>Full Name *</Form.Label>
+//               <Form.Control
+//                 type="text"
+//                 name="name"
+//                 value={formData.name}
+//                 onChange={handleInputChange}
+//                 placeholder="e.g., Sandesh Patil"
+//                 required
+//               />
+//             </Form.Group>
+
+//             <Form.Group className="mb-3">
+//               <Form.Label>Email *</Form.Label>
+//               <Form.Control
+//                 type="email"
+//                 name="email"
+//                 value={formData.email}
+//                 onChange={handleInputChange}
+//                 placeholder="student@example.com"
+//                 required
+//               />
+//             </Form.Group>
+
+//             <Form.Group className="mb-3">
+//               <Form.Label>Roll Number *</Form.Label>
+//               <Form.Control
+//                 type="text"
+//                 name="rollNo"
+//                 value={formData.rollNo}
+//                 onChange={handleInputChange}
+//                 placeholder="e.g., EN2026001"
+//                 required
+//               />
+//             </Form.Group>
+
+//             <Form.Group className="mb-3">
+//               <Form.Label>Course *</Form.Label>
+//               <Form.Select
+//                 name="courseId"
+//                 value={formData.courseId}
+//                 onChange={handleInputChange}
+//                 required
+//               >
+//                 {courses.map((course) => (
+//                   <option key={course._id} value={course._id}>
+//                     {course.name}
+//                   </option>
+//                 ))}
+//               </Form.Select>
+//             </Form.Group>
+
+//             <Form.Group className="mb-3">
+//               <Form.Label>Department *</Form.Label>
+//               <Form.Select
+//                 name="departmentId"
+//                 value={formData.departmentId}
+//                 onChange={handleInputChange}
+//                 required
+//               >
+//                 {courses.map((course) => (
+//                   <option key={course._id} value={course.departmentId}>
+//                     {course.departmentName || course.departmentId}
+//                   </option>
+//                 ))}
+//               </Form.Select>
+//             </Form.Group>
+
+//             <Button variant="primary" type="submit" disabled={submitting}>
+//               {submitting ? 'Creating...' : 'Add Student'}
+//             </Button>
+//           </Form>
+//         </Modal.Body>
+//       </Modal>
+//     </Container>
+//   );
+// };
+
+// export default StudentList; 
+
+
+
+
 // src/pages/students/StudentList.jsx
 import React, { useState, useEffect } from 'react';
 import {
@@ -16,20 +279,21 @@ import axiosInstance from '../../api/axios';
 const StudentList = () => {
   const [students, setStudents] = useState([]);
   const [courses, setCourses] = useState([]);
+  const [departments, setDepartments] = useState([]); // 👈 Added
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
-    rollNo: '', // 👈 Changed from enrollmentNumber
+    rollNo: '',
     courseId: '',
-    departmentId: '', // 👈 Added for consistency
+    departmentId: '',
   });
   const [submitting, setSubmitting] = useState(false);
   const [filterCourse, setFilterCourse] = useState('');
 
-  // Fetch students (optionally filtered)
+  // Fetch students (optionally filtered by course)
   const fetchStudents = async (courseId = '') => {
     try {
       const res = await axiosInstance.get(`/students${courseId ? `?courseId=${courseId}` : ''}`);
@@ -42,22 +306,32 @@ const StudentList = () => {
     }
   };
 
-  // Fetch courses for dropdown & filtering
-  const fetchCourses = async () => {
+  // Fetch courses and departments
+  const fetchData = async () => {
     try {
-      const res = await axiosInstance.get('/courses');
-      setCourses(res.data);
-      if (res.data.length > 0 && !formData.courseId) {
-        setFormData((prev) => ({ ...prev, courseId: res.data[0]._id }));
+      const [courseRes, deptRes] = await Promise.all([
+        axiosInstance.get('/courses'),
+        axiosInstance.get('/departments'),
+      ]);
+      setCourses(courseRes.data);
+      setDepartments(deptRes.data);
+
+      // Set default form values if data exists
+      if (courseRes.data.length > 0 && !formData.courseId) {
+        setFormData((prev) => ({
+          ...prev,
+          courseId: courseRes.data[0]._id,
+          departmentId: courseRes.data[0].departmentId || deptRes.data[0]?._id || '',
+        }));
       }
     } catch (err) {
       console.error(err);
-      // Non-fatal
+      setError('Could not load courses or departments');
     }
   };
 
   useEffect(() => {
-    fetchCourses();
+    fetchData();
     fetchStudents(filterCourse);
   }, [filterCourse]);
 
@@ -68,7 +342,8 @@ const StudentList = () => {
 
   const handleCreate = async (e) => {
     e.preventDefault();
-    if (!formData.name.trim() || !formData.email.trim() || !formData.rollNo.trim() || !formData.courseId || !formData.departmentId) {
+    const { name, email, rollNo, courseId, departmentId } = formData;
+    if (!name.trim() || !email.trim() || !rollNo.trim() || !courseId || !departmentId) {
       setError('All fields are required');
       return;
     }
@@ -77,12 +352,15 @@ const StudentList = () => {
     setError('');
     try {
       await axiosInstance.post('/students', formData);
+      // Reset form with defaults
+      const firstCourse = courses[0];
+      const firstDept = departments[0];
       setFormData({
         name: '',
         email: '',
         rollNo: '',
-        courseId: courses.length ? courses[0]._id : '',
-        departmentId: courses.length ? courses[0].departmentId : '',
+        courseId: firstCourse?._id || '',
+        departmentId: firstDept?._id || '',
       });
       setShowModal(false);
       fetchStudents(filterCourse);
@@ -98,6 +376,12 @@ const StudentList = () => {
     if (!id) return '—';
     const course = courses.find((c) => c._id === id);
     return course ? course.name : '—';
+  };
+
+  const getDepartmentName = (id) => {
+    if (!id) return '—';
+    const dept = departments.find((d) => d._id === id);
+    return dept ? dept.name : '—';
   };
 
   return (
@@ -142,15 +426,16 @@ const StudentList = () => {
                 <tr>
                   <th>Name</th>
                   <th>Email</th>
-                  <th>Roll No</th> {/* 👈 Updated header */}
+                  <th>Roll No</th>
                   <th>Course</th>
+                  <th>Department</th> {/* Optional: add if needed */}
                   <th>Created At</th>
                 </tr>
               </thead>
               <tbody>
                 {students.length === 0 ? (
                   <tr>
-                    <td colSpan="5" className="text-center">
+                    <td colSpan="6" className="text-center">
                       No students found
                     </td>
                   </tr>
@@ -161,6 +446,7 @@ const StudentList = () => {
                       <td>{student.email || '—'}</td>
                       <td>{student.rollNo || '—'}</td>
                       <td>{getCourseName(student.courseId)}</td>
+                      <td>{getDepartmentName(student.departmentId)}</td>
                       <td>{new Date(student.createdAt).toLocaleDateString()}</td>
                     </tr>
                   ))
@@ -238,9 +524,9 @@ const StudentList = () => {
                 onChange={handleInputChange}
                 required
               >
-                {courses.map((course) => (
-                  <option key={course._id} value={course.departmentId}>
-                    {course.departmentName || course.departmentId}
+                {departments.map((dept) => (
+                  <option key={dept._id} value={dept._id}>
+                    {dept.name}
                   </option>
                 ))}
               </Form.Select>

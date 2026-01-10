@@ -81,6 +81,11 @@ const courseSchema = new mongoose.Schema(
       required: true,
       trim: true
     },
+    code: {   // 👈 MUST BE HERE
+    type: String,
+    required: true,
+    unique: true,
+  },
     departmentId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Department",
